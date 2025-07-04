@@ -9,7 +9,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Database types
+// Database types with user_email included
 export type Teacher = {
   id: string;
   full_name: string;
@@ -24,6 +24,7 @@ export type Teacher = {
   photo_url?: string;
   created_at: string;
   updated_at: string;
+  user_email: string;
 };
 
 export type Class = {
@@ -35,6 +36,7 @@ export type Class = {
   max_students: number;
   created_at: string;
   updated_at: string;
+  user_email: string;
   teacher?: Teacher;
 };
 
@@ -52,6 +54,7 @@ export type Student = {
   photo_url?: string;
   created_at: string;
   updated_at: string;
+  user_email: string;
   class?: Class;
 };
 
@@ -61,6 +64,7 @@ export type TeacherAttendance = {
   date: string;
   status: 'present' | 'absent' | 'late';
   created_at: string;
+  user_email: string;
   teacher?: Teacher;
 };
 
@@ -71,6 +75,7 @@ export type StudentAttendance = {
   date: string;
   status: 'present' | 'absent' | 'late';
   created_at: string;
+  user_email: string;
   student?: Student;
   class?: Class;
 };
@@ -84,6 +89,7 @@ export type TeacherSalary = {
   status: 'paid' | 'unpaid';
   payment_mode?: 'cash' | 'bank' | 'online';
   created_at: string;
+  user_email: string;
   teacher?: Teacher;
 };
 
@@ -99,6 +105,7 @@ export type StudentFee = {
   description?: string;
   created_at: string;
   updated_at: string;
+  user_email: string;
   student?: Student;
 };
 
@@ -112,6 +119,7 @@ export type Exam = {
   passing_marks: number;
   created_at: string;
   updated_at: string;
+  user_email: string;
   class?: Class;
 };
 
@@ -123,6 +131,68 @@ export type StudentMark = {
   remarks?: string;
   created_at: string;
   updated_at: string;
+  user_email: string;
   student?: Student;
   exam?: Exam;
+};
+
+// Helper functions for user-scoped database operations
+export const createUserScopedQuery = (tableName: string, userEmail: string) => {
+  if (!userEmail) {
+    throw new Error('User email is required for database operations');
+  }
+  
+  return supabase
+    .from(tableName)
+    .select('*')
+    .eq('user_email', userEmail);
+};
+
+export const insertWithUserEmail = async (
+  tableName: string, 
+  data: Record<string, any>, 
+  userEmail: string
+) => {
+  if (!userEmail) {
+    throw new Error('User email is required for database operations');
+  }
+
+  return supabase
+    .from(tableName)
+    .insert([{ ...data, user_email: userEmail }])
+    .select();
+};
+
+export const updateWithUserEmail = async (
+  tableName: string,
+  id: string,
+  data: Record<string, any>,
+  userEmail: string
+) => {
+  if (!userEmail) {
+    throw new Error('User email is required for database operations');
+  }
+
+  return supabase
+    .from(tableName)
+    .update(data)
+    .eq('id', id)
+    .eq('user_email', userEmail)
+    .select();
+};
+
+export const deleteWithUserEmail = async (
+  tableName: string,
+  id: string,
+  userEmail: string
+) => {
+  if (!userEmail) {
+    throw new Error('User email is required for database operations');
+  }
+
+  return supabase
+    .from(tableName)
+    .delete()
+    .eq('id', id)
+    .eq('user_email', userEmail);
 };
