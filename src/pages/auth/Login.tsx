@@ -35,7 +35,7 @@ const Login = () => {
         <div className="rounded-lg bg-white px-8 py-10 shadow-md">
           {/* Header */}
           <div className="mb-6 text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900">School Management System</h2>
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900">Kaabiye Management System</h2>
             <p className="mt-2 text-sm text-gray-600">Sign in to your account</p>
           </div>
 
