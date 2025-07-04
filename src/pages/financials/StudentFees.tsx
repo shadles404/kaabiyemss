@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { PlusCircle, DollarSign, FileText, Check, Search, Download, Edit, Trash2 } from 'lucide-react';
 import { supabase, Student, StudentFee, Class } from '../../lib/supabase';
+import { useUserEmail } from '../../hooks/useUserEmail';
 
 const StudentFees = () => {
+  const userEmail = useUserEmail();
   const [students, setStudents] = useState<Student[]>([]);
   const [fees, setFees] = useState<StudentFee[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,12 +42,16 @@ const StudentFees = () => {
   ];
 
   useEffect(() => {
-    fetchStudents();
-    fetchFees();
-    fetchClasses();
-  }, []);
+    if (userEmail) {
+      fetchStudents();
+      fetchFees();
+      fetchClasses();
+    }
+  }, [userEmail]);
 
   const fetchStudents = async () => {
+    if (!userEmail) return;
+    
     try {
       const { data, error } = await supabase
         .from('students')
@@ -53,6 +59,7 @@ const StudentFees = () => {
           *,
           class:classes(name, section)
         `)
+        .eq('user_email', userEmail)
         .order('full_name');
 
       if (error) throw error;
@@ -63,10 +70,13 @@ const StudentFees = () => {
   };
 
   const fetchClasses = async () => {
+    if (!userEmail) return;
+    
     try {
       const { data, error } = await supabase
         .from('classes')
         .select('*')
+        .eq('user_email', userEmail)
         .order('name');
 
       if (error) throw error;
@@ -77,6 +87,8 @@ const StudentFees = () => {
   };
 
   const fetchFees = async () => {
+    if (!userEmail) return;
+    
     try {
       const { data, error } = await supabase
         .from('student_fees')
@@ -89,6 +101,7 @@ const StudentFees = () => {
             class:classes(name, section)
           )
         `)
+        .eq('user_email', userEmail)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -136,7 +149,8 @@ const StudentFees = () => {
       const { error } = await supabase
         .from('student_fees')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_email', userEmail);
 
       if (error) throw error;
 
@@ -167,6 +181,12 @@ const StudentFees = () => {
     setIsSubmitting(true);
     setError('');
 
+    if (!userEmail) {
+      setError('User not authenticated');
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const feeData = {
         student_id: formData.student_id,
@@ -177,6 +197,7 @@ const StudentFees = () => {
         status: formData.status,
         payment_mode: formData.payment_mode || null,
         description: formData.description || null,
+        user_email: userEmail,
       };
 
       if (editingFee) {
@@ -185,6 +206,7 @@ const StudentFees = () => {
           .from('student_fees')
           .update(feeData)
           .eq('id', editingFee.id)
+          .eq('user_email', userEmail)
           .select(`
             *,
             student:students(
@@ -230,6 +252,8 @@ const StudentFees = () => {
   };
 
   const markAsPaid = async (feeId: string) => {
+    if (!userEmail) return;
+    
     try {
       const { data, error } = await supabase
         .from('student_fees')
@@ -238,6 +262,7 @@ const StudentFees = () => {
           payment_date: new Date().toISOString().split('T')[0] 
         })
         .eq('id', feeId)
+        .eq('user_email', userEmail)
         .select(`
           *,
           student:students(
@@ -296,6 +321,17 @@ const StudentFees = () => {
   };
 
   const stats = calculateStats();
+
+  if (!userEmail) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <div className="text-center">
+          <h3 className="text-lg font-medium text-gray-900">Authentication Required</h3>
+          <p className="text-sm text-gray-500">Please log in to access student fees.</p>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

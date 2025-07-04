@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { PlusCircle, DollarSign, FileText, Check, Search, Download, Edit, Trash2 } from 'lucide-react';
 import { supabase, Teacher, TeacherSalary } from '../../lib/supabase';
+import { useUserEmail } from '../../hooks/useUserEmail';
 
 const TeacherSalaryModule = () => {
+  const userEmail = useUserEmail();
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [salaries, setSalaries] = useState<TeacherSalary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,15 +25,20 @@ const TeacherSalaryModule = () => {
   });
 
   useEffect(() => {
-    fetchTeachers();
-    fetchSalaries();
-  }, []);
+    if (userEmail) {
+      fetchTeachers();
+      fetchSalaries();
+    }
+  }, [userEmail]);
 
   const fetchTeachers = async () => {
+    if (!userEmail) return;
+    
     try {
       const { data, error } = await supabase
         .from('teachers')
         .select('*')
+        .eq('user_email', userEmail)
         .order('full_name');
 
       if (error) throw error;
@@ -42,6 +49,8 @@ const TeacherSalaryModule = () => {
   };
 
   const fetchSalaries = async () => {
+    if (!userEmail) return;
+    
     try {
       const { data, error } = await supabase
         .from('teacher_salaries')
@@ -49,6 +58,7 @@ const TeacherSalaryModule = () => {
           *,
           teacher:teachers(full_name)
         `)
+        .eq('user_email', userEmail)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -92,7 +102,8 @@ const TeacherSalaryModule = () => {
       const { error } = await supabase
         .from('teacher_salaries')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_email', userEmail);
 
       if (error) throw error;
 
@@ -115,6 +126,12 @@ const TeacherSalaryModule = () => {
     setIsSubmitting(true);
     setError('');
 
+    if (!userEmail) {
+      setError('User not authenticated');
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const salaryData = {
         teacher_id: formData.teacher_id,
@@ -123,6 +140,7 @@ const TeacherSalaryModule = () => {
         month_year: formData.month_year,
         status: formData.status,
         payment_mode: formData.payment_mode || null,
+        user_email: userEmail,
       };
 
       if (editingSalary) {
@@ -131,6 +149,7 @@ const TeacherSalaryModule = () => {
           .from('teacher_salaries')
           .update(salaryData)
           .eq('id', editingSalary.id)
+          .eq('user_email', userEmail)
           .select(`
             *,
             teacher:teachers(full_name)
@@ -166,6 +185,8 @@ const TeacherSalaryModule = () => {
   };
 
   const updateSalaryStatus = async (id: string, status: 'paid' | 'unpaid', payment_date?: string) => {
+    if (!userEmail) return;
+    
     try {
       const { data, error } = await supabase
         .from('teacher_salaries')
@@ -174,6 +195,7 @@ const TeacherSalaryModule = () => {
           payment_date: status === 'paid' ? (payment_date || new Date().toISOString().split('T')[0]) : null 
         })
         .eq('id', id)
+        .eq('user_email', userEmail)
         .select(`
           *,
           teacher:teachers(full_name)
@@ -206,6 +228,17 @@ const TeacherSalaryModule = () => {
         return 'bg-gray-100 text-gray-800';
     }
   };
+
+  if (!userEmail) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <div className="text-center">
+          <h3 className="text-lg font-medium text-gray-900">Authentication Required</h3>
+          <p className="text-sm text-gray-500">Please log in to access teacher salaries.</p>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
