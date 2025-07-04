@@ -26,7 +26,7 @@ const Header = () => {
           </button>
           
           <div className="ml-4 md:ml-0">
-            <h1 className="text-xl font-bold text-blue-600">Kaabiye Management System </h1>
+            <h1 className="text-xl font-bold text-blue-600">Kaabiye Management System</h1>
           </div>
         </div>
 
@@ -81,6 +81,7 @@ const Header = () => {
                     {user?.user_metadata?.full_name || 'User'}
                   </p>
                   <p className="text-xs text-gray-500">{user?.email}</p>
+                  <p className="text-xs text-blue-500 mt-1">Private System</p>
                 </div>
                 
                 <a
