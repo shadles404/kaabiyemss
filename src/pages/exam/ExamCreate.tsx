@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, X } from 'lucide-react';
 import { supabase, Class } from '../../lib/supabase';
+import { useUserEmail } from '../../hooks/useUserEmail';
 
 const ExamCreate = () => {
   const navigate = useNavigate();
+  const userEmail = useUserEmail();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -38,14 +40,19 @@ const ExamCreate = () => {
   ];
 
   useEffect(() => {
-    fetchClasses();
-  }, []);
+    if (userEmail) {
+      fetchClasses();
+    }
+  }, [userEmail]);
 
   const fetchClasses = async () => {
+    if (!userEmail) return;
+    
     try {
       const { data, error } = await supabase
         .from('classes')
         .select('*')
+        .eq('user_email', userEmail)
         .order('name');
 
       if (error) throw error;
@@ -68,6 +75,12 @@ const ExamCreate = () => {
     setIsSubmitting(true);
     setError('');
 
+    if (!userEmail) {
+      setError('User not authenticated');
+      setIsSubmitting(false);
+      return;
+    }
+
     // Validation
     if (parseInt(formData.passing_marks) > parseInt(formData.max_marks)) {
       setError('Passing marks cannot be greater than maximum marks');
@@ -85,6 +98,7 @@ const ExamCreate = () => {
           exam_date: formData.exam_date,
           max_marks: parseInt(formData.max_marks),
           passing_marks: parseInt(formData.passing_marks),
+          user_email: userEmail,
         }])
         .select();
 
@@ -105,6 +119,17 @@ const ExamCreate = () => {
       setIsSubmitting(false);
     }
   };
+
+  if (!userEmail) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <div className="text-center">
+          <h3 className="text-lg font-medium text-gray-900">Authentication Required</h3>
+          <p className="text-sm text-gray-500">Please log in to create exams.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-4xl pb-12">

@@ -2,19 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, Edit, Trash2, Search, BookOpen, Calendar, Users, FileText } from 'lucide-react';
 import { supabase, Exam } from '../../lib/supabase';
+import { useUserEmail } from '../../hooks/useUserEmail';
 
 const ExamList = () => {
   const navigate = useNavigate();
+  const userEmail = useUserEmail();
   const [exams, setExams] = useState<Exam[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetchExams();
-  }, []);
+    if (userEmail) {
+      fetchExams();
+    }
+  }, [userEmail]);
 
   const fetchExams = async () => {
+    if (!userEmail) return;
+    
     try {
       const { data, error } = await supabase
         .from('exams')
@@ -22,6 +28,7 @@ const ExamList = () => {
           *,
           class:classes(name, section)
         `)
+        .eq('user_email', userEmail)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -40,7 +47,8 @@ const ExamList = () => {
       const { error } = await supabase
         .from('exams')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_email', userEmail);
 
       if (error) throw error;
       
@@ -57,6 +65,17 @@ const ExamList = () => {
                          (exam.class?.name || '').toLowerCase().includes(searchQuery.toLowerCase());
     return matchesSearch;
   });
+
+  if (!userEmail) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <div className="text-center">
+          <h3 className="text-lg font-medium text-gray-900">Authentication Required</h3>
+          <p className="text-sm text-gray-500">Please log in to access exams.</p>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
