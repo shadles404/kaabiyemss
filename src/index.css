@@ -20,19 +20,177 @@
 
 /* Improved focus styles for better accessibility */
 :focus-visible {
-  @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+  @apply outline-none ring-2 ring-cyan-500 ring-offset-2 ring-offset-gray-900;
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar for dark theme */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-gray-100;
+  @apply bg-gray-800;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply rounded bg-gray-300 hover:bg-gray-400;
+  @apply rounded bg-gray-600 hover:bg-gray-500;
+}
+
+/* Neon glow effects */
+.neon-glow {
+  box-shadow: 0 0 5px theme('colors.cyan.400'), 0 0 10px theme('colors.cyan.400'), 0 0 15px theme('colors.cyan.400');
+}
+
+.neon-glow-purple {
+  box-shadow: 0 0 5px theme('colors.purple.400'), 0 0 10px theme('colors.purple.400'), 0 0 15px theme('colors.purple.400');
+}
+
+/* Animated gradient backgrounds */
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+/* Particle animation */
+@keyframes particle-float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-20px) rotate(180deg);
+    opacity: 0.5;
+  }
+}
+
+.animate-particle {
+  animation: particle-float 3s ease-in-out infinite;
+}
+
+/* Pulse animation variants */
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Reverse spin animation */
+@keyframes spin-reverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+.animate-reverse {
+  animation: spin-reverse 1s linear infinite;
+}
+
+/* Holographic effect */
+.holographic {
+  background: linear-gradient(45deg, 
+    rgba(0, 255, 255, 0.1) 0%,
+    rgba(255, 0, 255, 0.1) 25%,
+    rgba(255, 255, 0, 0.1) 50%,
+    rgba(0, 255, 255, 0.1) 75%,
+    rgba(255, 0, 255, 0.1) 100%
+  );
+  background-size: 400% 400%;
+  animation: gradient-shift 4s ease infinite;
+}
+
+/* Glass morphism effect */
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Command center specific animations */
+@keyframes data-stream {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.animate-data-stream {
+  animation: data-stream 2s linear infinite;
+}
+
+/* Biometric ring animation */
+@keyframes biometric-scan {
+  0% {
+    transform: rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: rotate(180deg) scale(1.1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-biometric {
+  animation: biometric-scan 3s linear infinite;
+}
+
+/* Hexagonal clip path */
+.hexagon {
+  clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
+}
+
+/* Glitch effect */
+@keyframes glitch {
+  0% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(-2px, 2px);
+  }
+  40% {
+    transform: translate(-2px, -2px);
+  }
+  60% {
+    transform: translate(2px, 2px);
+  }
+  80% {
+    transform: translate(2px, -2px);
+  }
+  100% {
+    transform: translate(0);
+  }
+}
+
+.animate-glitch {
+  animation: glitch 0.3s ease-in-out infinite;
 }
